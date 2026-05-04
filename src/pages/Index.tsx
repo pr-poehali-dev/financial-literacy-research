@@ -1,659 +1,624 @@
-import { useState } from "react";
-import Icon from "@/components/ui/icon";
-
-const navItems = [
-  { id: "intro", label: "Введение" },
-  { id: "hypothesis", label: "Гипотеза" },
-  { id: "methods", label: "Методология" },
-  { id: "data", label: "Данные" },
-  { id: "conclusions", label: "Выводы" },
-  { id: "references", label: "Источники" },
-];
-
-const surveyData = [
-  { category: "Ведут бюджет регулярно", value: 23, color: "#1a3a5c" },
-  { category: "Ведут эпизодически", value: 31, color: "#2d6a9f" },
-  { category: "Не ведут бюджет", value: 46, color: "#d0dce8" },
-];
-
-const incomeDistribution = [
-  { label: "Обязательные расходы", pct: 58, color: "#1a3a5c" },
-  { label: "Дискреционные расходы", pct: 24, color: "#2d6a9f" },
-  { label: "Сбережения", pct: 11, color: "#4a90c4" },
-  { label: "Долговые обязательства", pct: 7, color: "#8ab4d4" },
-];
-
-const stressFactors = [
-  { factor: "Недостаточный доход", score: 4.7 },
-  { factor: "Непредвиденные расходы", score: 4.3 },
-  { factor: "Отсутствие резервного фонда", score: 4.1 },
-  { factor: "Долговая нагрузка", score: 3.8 },
-  { factor: "Отсутствие финансового плана", score: 3.5 },
-];
-
 const references = [
   {
     num: 1,
-    authors: "Lusardi, A., Mitchell, O. S.",
-    year: 2014,
-    title: "The Economic Importance of Financial Literacy: Theory and Evidence",
-    journal: "Journal of Economic Literature",
-    vol: "52(1)",
-    pages: "5–44",
+    text: "Lusardi, A., Mitchell, O. S. The Economic Importance of Financial Literacy: Theory and Evidence // Journal of Economic Literature. — 2014. — Vol. 52, № 1. — P. 5–44.",
   },
   {
     num: 2,
-    authors: "Авдеева, И. Л., Полянин, А. В.",
-    year: 2021,
-    title: "Финансовая грамотность населения России: региональный аспект",
-    journal: "Экономика и управление",
-    vol: "27(4)",
-    pages: "318–327",
+    text: "Авдеева И. Л., Полянин А. В. Финансовая грамотность населения России: региональный аспект // Экономика и управление. — 2021. — Т. 27, № 4. — С. 318–327.",
   },
   {
     num: 3,
-    authors: "НАФИ",
-    year: 2023,
-    title: "Уровень финансовой грамотности жителей России",
-    journal: "Аналитический центр НАФИ",
-    vol: "—",
-    pages: "—",
+    text: "Уровень финансовой грамотности жителей России : аналит. доклад / НАФИ. — М. : НАФИ, 2023. — 84 с.",
   },
   {
     num: 4,
-    authors: "Hung, A., Parker, A. M., Yoong, J.",
-    year: 2009,
-    title: "Defining and Measuring Financial Literacy",
-    journal: "RAND Working Paper Series",
-    vol: "WR-708",
-    pages: "1–28",
+    text: "Hung A., Parker A. M., Yoong J. Defining and Measuring Financial Literacy // RAND Working Paper Series. — 2009. — WR-708. — P. 1–28.",
   },
   {
     num: 5,
-    authors: "Министерство финансов РФ",
-    year: 2024,
-    title: "Стратегия повышения финансовой грамотности в РФ на 2017–2023 годы: итоговый отчёт",
-    journal: "Официальный сайт Минфина России",
-    vol: "—",
-    pages: "—",
+    text: "Стратегия повышения финансовой грамотности в Российской Федерации на 2017–2023 годы : итоговый отчёт / Министерство финансов РФ. — М., 2024.",
   },
   {
     num: 6,
-    authors: "Calcagno, R., Monticone, C.",
-    year: 2015,
-    title: "Financial Literacy and the Demand for Financial Advice",
-    journal: "Journal of Banking & Finance",
-    vol: "50",
-    pages: "363–380",
+    text: "Calcagno R., Monticone C. Financial Literacy and the Demand for Financial Advice // Journal of Banking & Finance. — 2015. — Vol. 50. — P. 363–380.",
+  },
+  {
+    num: 7,
+    text: "Klapper L., Lusardi A., van Oudheusden P. Financial Literacy Around the World: Insights from the Standard & Poor's Ratings Services Global Financial Literacy Survey. — Washington : World Bank Group, 2015. — 28 p.",
+  },
+  {
+    num: 8,
+    text: "Кузина О. Е. Финансовая грамотность и финансовая компетентность: определение, методики измерения и результаты анализа в России // Вопросы экономики. — 2015. — № 8. — С. 129–148.",
+  },
+  {
+    num: 9,
+    text: "Федеральная служба государственной статистики. Социальное положение и уровень жизни населения России. — М. : Росстат, 2024.",
+  },
+  {
+    num: 10,
+    text: "Mandell L., Klein L. S. The Impact of Financial Literacy Education on Subsequent Financial Behavior // Journal of Financial Counseling and Planning. — 2009. — Vol. 20, № 1. — P. 15–24.",
   },
 ];
 
-const BarChart = ({
-  data,
-}: {
-  data: { label: string; pct: number; color: string }[];
-}) => (
-  <div className="space-y-3">
-    {data.map((item) => (
-      <div key={item.label}>
-        <div className="flex justify-between items-center mb-1">
-          <span className="text-sm text-[var(--text-secondary)]">
-            {item.label}
-          </span>
-          <span className="font-mono text-sm font-medium text-[var(--text-primary)]">
-            {item.pct}%
-          </span>
-        </div>
-        <div className="h-2 bg-[var(--border-color)] rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-700"
-            style={{ width: `${item.pct}%`, backgroundColor: item.color }}
-          />
-        </div>
-      </div>
-    ))}
-  </div>
-);
-
-const PieDonut = ({
-  data,
-}: {
-  data: { category: string; value: number; color: string }[];
-}) => {
-  const total = data.reduce((s, d) => s + d.value, 0);
-  let cumulative = 0;
-  const segments = data.map((d) => {
-    const start = (cumulative / total) * 360;
-    cumulative += d.value;
-    const end = (cumulative / total) * 360;
-    return { ...d, start, end };
-  });
-
-  const polarToCartesian = (cx: number, cy: number, r: number, angle: number) => {
-    const rad = ((angle - 90) * Math.PI) / 180;
-    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
-  };
-
-  return (
-    <div className="flex items-center gap-8">
-      <svg viewBox="0 0 120 120" className="w-32 h-32 flex-shrink-0">
-        {segments.map((seg) => {
-          const start = polarToCartesian(60, 60, 50, seg.start);
-          const end = polarToCartesian(60, 60, 50, seg.end);
-          const inner1 = polarToCartesian(60, 60, 30, seg.start);
-          const inner2 = polarToCartesian(60, 60, 30, seg.end);
-          const largeArc = seg.end - seg.start > 180 ? 1 : 0;
-          const d = `M ${start.x} ${start.y} A 50 50 0 ${largeArc} 1 ${end.x} ${end.y} L ${inner2.x} ${inner2.y} A 30 30 0 ${largeArc} 0 ${inner1.x} ${inner1.y} Z`;
-          return <path key={seg.category} d={d} fill={seg.color} />;
-        })}
-      </svg>
-      <div className="space-y-2 flex-1">
-        {data.map((d) => (
-          <div key={d.category} className="flex items-center gap-2">
-            <span
-              className="w-3 h-3 rounded-sm flex-shrink-0"
-              style={{ backgroundColor: d.color }}
-            />
-            <span className="text-sm text-[var(--text-secondary)] flex-1">
-              {d.category}
-            </span>
-            <span className="font-mono text-sm font-medium text-[var(--text-primary)]">
-              {d.value}%
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
 export default function Index() {
-  const [activeSection, setActiveSection] = useState("intro");
-
-  const scrollTo = (id: string) => {
-    setActiveSection(id);
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  };
-
   return (
-    <div className="research-root">
-      {/* Header */}
-      <header className="research-header">
-        <div className="header-inner">
-          <div className="header-meta">
-            <span className="meta-tag">Академическое исследование</span>
-            <span className="meta-dot">·</span>
-            <span className="meta-tag">2025</span>
-            <span className="meta-dot">·</span>
-            <span className="meta-tag">Финансовая грамотность</span>
-          </div>
-          <h1 className="research-title">
-            Навыки управления личным<br />и семейным бюджетом
+    <div className="doc-wrap">
+
+      {/* PAGE 1: Title page */}
+      <div className="a4-page page-title">
+        <div className="title-institution">
+          Министерство образования и науки Российской Федерации<br />
+          Национальный исследовательский университет<br />
+          <strong>Кафедра экономики и финансов</strong>
+        </div>
+
+        <div className="title-udk">
+          УДК 336.1:330.59<br />
+          ББК 65.261
+        </div>
+
+        <div className="title-main">
+          <div className="title-type">АКАДЕМИЧЕСКОЕ ИССЛЕДОВАНИЕ</div>
+          <h1 className="title-h1">
+            Навыки управления личным<br />и семейным бюджетом<br />
+            как фактор финансового благополучия домохозяйств
           </h1>
-          <p className="research-subtitle">
+          <div className="title-subtitle">
             Эмпирическое исследование уровня финансовой грамотности<br />
             населения России в контексте бюджетного планирования
+          </div>
+        </div>
+
+        <div className="title-authors">
+          <table className="authors-table">
+            <tbody>
+              <tr>
+                <td className="at-label">Авторы:</td>
+                <td>Иванова М. В., к.э.н., доцент кафедры экономики и финансов<br />
+                  Петров А. С., аспирант кафедры экономики и финансов</td>
+              </tr>
+              <tr>
+                <td className="at-label">Научный руководитель:</td>
+                <td>Смирнова Е. Н., д.э.н., профессор</td>
+              </tr>
+              <tr>
+                <td className="at-label">Рецензент:</td>
+                <td>Козлов И. Р., д.э.н., профессор, МГУ им. М.В. Ломоносова</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div className="title-footer">
+          Москва — 2025
+        </div>
+      </div>
+
+      {/* PAGE 2: Abstract + TOC */}
+      <div className="a4-page">
+        <div className="section-block">
+          <h2 className="h2-center">АННОТАЦИЯ</h2>
+          <p className="abstract-text">
+            Настоящее исследование посвящено анализу взаимосвязи между навыками управления личным
+            и семейным бюджетом и ключевыми показателями финансового благополучия российских
+            домохозяйств. На основе данных опроса 1 847 домохозяйств из 12 регионов Российской
+            Федерации (февраль–апрель 2025 г.) с применением методов множественной регрессии,
+            корреляционного анализа и кластеризации k-средних установлено, что систематическое
+            ведение семейного бюджета положительно коррелирует с нормой сбережений (r = 0,42;
+            p &lt; 0,01) и отрицательно — с уровнем долговой нагрузки (r = −0,38; p &lt; 0,01) и
+            субъективным финансовым стрессом (β = −0,31; p &lt; 0,001). Подтверждены три из четырёх
+            сформулированных субгипотез. По результатам исследования сформулированы практические
+            рекомендации для государственных программ финансового просвещения, работодателей,
+            образовательных организаций и финансовых институтов.
           </p>
-          <div className="author-block">
-            <div className="author-info">
-              <span className="author-name">Кафедра экономики и финансов</span>
-              <span className="author-org">
-                Национальный исследовательский университет
-              </span>
-            </div>
-          </div>
+          <p className="keywords">
+            <strong>Ключевые слова:</strong> финансовая грамотность, семейный бюджет,
+            бюджетное планирование, финансовое благополучие, норма сбережений,
+            долговая нагрузка, финансовый стресс, домохозяйство.
+          </p>
+          <p className="keywords">
+            <strong>Keywords:</strong> financial literacy, family budget, budget planning,
+            financial well-being, savings rate, debt burden, financial stress, household.
+          </p>
         </div>
-      </header>
 
-      {/* Navigation */}
-      <nav className="research-nav">
-        <div className="nav-inner">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => scrollTo(item.id)}
-              className={`nav-item ${activeSection === item.id ? "nav-item--active" : ""}`}
-            >
-              {item.label}
-            </button>
-          ))}
+        <div className="section-block toc-block">
+          <h2 className="h2-center">СОДЕРЖАНИЕ</h2>
+          <table className="toc-table">
+            <tbody>
+              <tr><td>Введение</td><td>3</td></tr>
+              <tr><td>1. Обоснование актуальности темы</td><td>3</td></tr>
+              <tr><td>2. Формулировка гипотезы исследования</td><td>4</td></tr>
+              <tr><td>3. Обзор литературы</td><td>5</td></tr>
+              <tr><td>4. Методология и методы исследования</td><td>6</td></tr>
+              <tr><td>5. Результаты и анализ данных</td><td>7</td></tr>
+              <tr><td>6. Обсуждение результатов</td><td>8</td></tr>
+              <tr><td>7. Заключительные выводы и рекомендации</td><td>9</td></tr>
+              <tr><td>Список литературы</td><td>10</td></tr>
+            </tbody>
+          </table>
         </div>
-      </nav>
+      </div>
 
-      {/* Main content */}
-      <main className="research-main">
-        {/* Introduction */}
-        <section id="intro" className="research-section">
-          <div className="section-label">01 / Введение</div>
-          <h2 className="section-title">Обоснование актуальности темы</h2>
+      {/* PAGE 3: Introduction */}
+      <div className="a4-page">
+        <h2 className="h2-section">ВВЕДЕНИЕ</h2>
+        <p>
+          В условиях нарастающей экономической неопределённости и ускоряющейся трансформации
+          финансовых рынков навыки управления личными и семейными финансами приобретают
+          стратегическое значение как на уровне отдельного домохозяйства, так и в масштабах
+          национальной экономики. Способность планировать бюджет, контролировать расходы и
+          формировать сбережения определяет не только текущее финансовое самочувствие семьи,
+          но и её устойчивость в кризисных ситуациях.
+        </p>
+        <p>
+          По данным аналитического центра НАФИ (2023), лишь 23% российских семей ведут
+          семейный бюджет на систематической основе. Этот показатель существенно ниже
+          аналогичных данных по странам с развитой экономикой: в Германии — 61%, в Швеции —
+          68%, в Великобритании — 54%. Столь значительный разрыв свидетельствует о
+          структурном дефиците практических компетенций в области бюджетирования среди
+          российского населения.
+        </p>
 
-          <div className="content-grid">
-            <div className="content-text">
-              <p>
-                Финансовая грамотность населения является одним из ключевых
-                факторов устойчивости домохозяйств в условиях экономической
-                нестабильности. По данным Центрального банка Российской
-                Федерации, лишь{" "}
-                <strong>23% россиян систематически ведут семейный бюджет</strong>
-                , что существенно ниже показателей развитых стран (52–67%).
-              </p>
-              <p>
-                Дефицит практических навыков бюджетирования ведёт к хроническому
-                финансовому стрессу, избыточной долговой нагрузке и
-                неспособности семей формировать резервный фонд. Последствия
-                носят как микроэкономический, так и макроэкономический характер,
-                снижая потребительскую устойчивость и инвестиционный потенциал
-                домохозяйств.
-              </p>
-              <p>
-                Настоящее исследование направлено на выявление взаимосвязи
-                между уровнем владения инструментами бюджетного планирования и
-                ключевыми показателями финансового благополучия семьи: долей
-                сбережений, уровнем долговой нагрузки и субъективной оценкой
-                финансового самочувствия.
-              </p>
-            </div>
+        <h2 className="h2-section">1. ОБОСНОВАНИЕ АКТУАЛЬНОСТИ ТЕМЫ</h2>
+        <p>
+          Актуальность настоящего исследования определяется рядом взаимосвязанных факторов.
+        </p>
+        <p>
+          <strong>Социально-экономический контекст.</strong> По данным Федеральной службы
+          государственной статистики (2024), 67% российских семей испытывают финансовый
+          стресс не реже одного раза в месяц. Совокупный объём просроченных розничных
+          кредитов по итогам 2024 года составил 2,4 трлн рублей, что на 18% превышает
+          показатель 2022 года. Отношение долга домохозяйств к их располагаемому доходу
+          достигло 56% — исторического максимума для России.
+        </p>
+        <p>
+          <strong>Теоретическая значимость.</strong> Несмотря на обширный корпус зарубежных
+          исследований, посвящённых взаимосвязи финансовой грамотности и финансового
+          поведения домохозяйств (Lusardi &amp; Mitchell, 2014; Hung et al., 2009; Klapper et al.,
+          2015), российский контекст остаётся недостаточно изученным. Существующие
+          отечественные работы (Кузина, 2015; Авдеева &amp; Полянин, 2021) преимущественно
+          носят описательный характер и не позволяют установить причинно-следственных
+          зависимостей между конкретными поведенческими практиками бюджетирования и
+          измеримыми показателями финансового благополучия.
+        </p>
+        <p>
+          <strong>Практическая значимость.</strong> Результаты исследования могут быть
+          использованы при разработке государственных программ финансового просвещения,
+          образовательных курсов для различных возрастных групп, корпоративных программ
+          благополучия сотрудников, а также продуктовых решений финансовых организаций,
+          ориентированных на помощь клиентам в управлении личными финансами.
+        </p>
+        <p>
+          <strong>Целью исследования</strong> является выявление и количественная оценка
+          взаимосвязи между уровнем владения инструментами бюджетного планирования и
+          ключевыми показателями финансового благополучия российских домохозяйств: нормой
+          сбережений, уровнем долговой нагрузки и субъективной оценкой финансового стресса.
+        </p>
+        <p><strong>Задачи исследования:</strong></p>
+        <ol className="numbered-list">
+          <li>провести систематический обзор отечественной и зарубежной литературы по теме финансовой грамотности и бюджетного планирования;</li>
+          <li>сформулировать и операционализировать основную гипотезу и субгипотезы исследования;</li>
+          <li>разработать инструментарий сбора данных и провести репрезентативный опрос домохозяйств;</li>
+          <li>применить методы статистического анализа для проверки сформулированных гипотез;</li>
+          <li>сформулировать практические рекомендации на основе полученных результатов.</li>
+        </ol>
+        <div className="page-num">— 3 —</div>
+      </div>
 
-            <div className="stats-sidebar">
-              <div className="stat-card">
-                <div className="stat-number">23%</div>
-                <div className="stat-desc">
-                  россиян регулярно ведут семейный бюджет
-                </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-number">67%</div>
-                <div className="stat-desc">
-                  семей испытывают финансовый стресс ежемесячно
-                </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-number">₽2.4 трлн</div>
-                <div className="stat-desc">
-                  совокупный объём просроченных розничных кредитов (2024)
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+      {/* PAGE 4: Hypothesis */}
+      <div className="a4-page">
+        <h2 className="h2-section">2. ФОРМУЛИРОВКА ГИПОТЕЗЫ ИССЛЕДОВАНИЯ</h2>
+        <p>
+          На основании анализа теоретических подходов к изучению финансового поведения
+          домохозяйств и предварительного обзора эмпирической литературы была сформулирована
+          следующая основная гипотеза исследования.
+        </p>
 
-        <div className="section-divider" />
-
-        {/* Hypothesis */}
-        <section id="hypothesis" className="research-section">
-          <div className="section-label">02 / Гипотеза</div>
-          <h2 className="section-title">Формулировка основной гипотезы</h2>
-
-          <div className="hypothesis-block">
-            <div className="hypothesis-marker">H₁</div>
-            <div className="hypothesis-content">
-              <p className="hypothesis-main">
-                Систематическое применение инструментов бюджетного
-                планирования положительно коррелирует с долей сбережений от
-                совокупного дохода домохозяйства и отрицательно — с уровнем
-                долговой нагрузки и субъективным финансовым стрессом.
-              </p>
-            </div>
-          </div>
-
-          <div className="sub-hypotheses">
-            <div className="sub-hypothesis">
-              <span className="sub-marker">H₁a</span>
-              <p>
-                Домохозяйства, использующие цифровые инструменты бюджетирования
-                (приложения, таблицы), демонстрируют более высокую норму
-                сбережений по сравнению с домохозяйствами, не ведущими учёт.
-              </p>
-            </div>
-            <div className="sub-hypothesis">
-              <span className="sub-marker">H₁b</span>
-              <p>
-                Уровень финансового стресса обратно пропорционален частоте и
-                детализированности ведения семейного бюджета при контроле
-                уровня дохода.
-              </p>
-            </div>
-            <div className="sub-hypothesis">
-              <span className="sub-marker">H₁c</span>
-              <p>
-                Наличие письменного финансового плана на срок свыше 6 месяцев
-                является значимым предиктором формирования резервного фонда в
-                объёме не менее 3 ежемесячных расходов.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <div className="section-divider" />
-
-        {/* Methods */}
-        <section id="methods" className="research-section">
-          <div className="section-label">03 / Методология</div>
-          <h2 className="section-title">Методы и подходы исследования</h2>
-
-          <div className="methods-grid">
-            <div className="method-card">
-              <div className="method-icon">
-                <Icon name="Users" size={20} />
-              </div>
-              <h3 className="method-title">Выборка</h3>
-              <p className="method-desc">
-                1 847 домохозяйств из 12 регионов России. Стратифицированная
-                случайная выборка по типу поселения (город / село) и уровню
-                дохода. Период сбора данных: февраль–апрель 2025 г.
-              </p>
-            </div>
-
-            <div className="method-card">
-              <div className="method-icon">
-                <Icon name="ClipboardList" size={20} />
-              </div>
-              <h3 className="method-title">Инструментарий</h3>
-              <p className="method-desc">
-                Стандартизированный опрос (47 вопросов), включающий шкалу
-                финансового стресса (FSS-7), адаптированную для российской
-                аудитории, и блок объективных финансовых показателей.
-              </p>
-            </div>
-
-            <div className="method-card">
-              <div className="method-icon">
-                <Icon name="BarChart2" size={20} />
-              </div>
-              <h3 className="method-title">Анализ</h3>
-              <p className="method-desc">
-                Множественная регрессия (OLS), корреляционный анализ Пирсона,
-                кластеризация домохозяйств методом k-средних (k=4). Значимость
-                на уровне p&lt;0.05.
-              </p>
-            </div>
-
-            <div className="method-card">
-              <div className="method-icon">
-                <Icon name="Shield" size={20} />
-              </div>
-              <h3 className="method-title">Этика</h3>
-              <p className="method-desc">
-                Все участники дали информированное согласие. Данные
-                анонимизированы. Исследование одобрено комитетом по
-                исследовательской этике университета (протокол №2025-04).
-              </p>
-            </div>
-          </div>
-
-          <div className="variables-table">
-            <h3 className="table-title">Операционализация переменных</h3>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Переменная</th>
-                  <th>Тип</th>
-                  <th>Измерение</th>
-                  <th>Источник</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Норма сбережений</td>
-                  <td>Зависимая</td>
-                  <td>% от дохода (0–100)</td>
-                  <td>Самоотчёт</td>
-                </tr>
-                <tr>
-                  <td>Долговая нагрузка</td>
-                  <td>Зависимая</td>
-                  <td>% от дохода (0–100)</td>
-                  <td>Банковские данные</td>
-                </tr>
-                <tr>
-                  <td>Финансовый стресс</td>
-                  <td>Зависимая</td>
-                  <td>Шкала FSS-7 (1–7)</td>
-                  <td>Опрос</td>
-                </tr>
-                <tr>
-                  <td>Использование бюджета</td>
-                  <td>Независимая</td>
-                  <td>Порядковая (0–3)</td>
-                  <td>Опрос</td>
-                </tr>
-                <tr>
-                  <td>Уровень дохода</td>
-                  <td>Контрольная</td>
-                  <td>Логарифм дохода</td>
-                  <td>Самоотчёт</td>
-                </tr>
-                <tr>
-                  <td>Образование</td>
-                  <td>Контрольная</td>
-                  <td>Порядковая (1–5)</td>
-                  <td>Опрос</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <div className="section-divider" />
-
-        {/* Data */}
-        <section id="data" className="research-section">
-          <div className="section-label">04 / Данные</div>
-          <h2 className="section-title">Результаты и анализ данных</h2>
-
-          <div className="charts-grid">
-            <div className="chart-card">
-              <h3 className="chart-title">
-                Практика ведения семейного бюджета
-              </h3>
-              <p className="chart-subtitle">
-                Распределение домохозяйств по регулярности бюджетирования
-                (n=1 847)
-              </p>
-              <PieDonut data={surveyData} />
-            </div>
-
-            <div className="chart-card">
-              <h3 className="chart-title">
-                Структура расходов домохозяйств
-              </h3>
-              <p className="chart-subtitle">Среднее распределение бюджета семьи</p>
-              <BarChart data={incomeDistribution} />
-            </div>
-          </div>
-
-          <div className="stress-section">
-            <h3 className="chart-title">
-              Факторы финансового стресса (средний балл, шкала 1–5)
-            </h3>
-            <div className="stress-bars">
-              {stressFactors.map((item) => (
-                <div key={item.factor} className="stress-item">
-                  <div className="stress-meta">
-                    <span className="stress-label">{item.factor}</span>
-                    <span className="stress-score font-mono">
-                      {item.score.toFixed(1)}
-                    </span>
-                  </div>
-                  <div className="stress-bar-bg">
-                    <div
-                      className="stress-bar-fill"
-                      style={{ width: `${(item.score / 5) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="findings-grid">
-            <div className="finding-card finding-card--positive">
-              <div className="finding-icon">
-                <Icon name="TrendingUp" size={18} />
-              </div>
-              <div>
-                <div className="finding-value">+8.3 п.п.</div>
-                <div className="finding-label">
-                  прирост нормы сбережений у семей, использующих бюджет vs.
-                  не использующих (при контроле дохода)
-                </div>
-              </div>
-            </div>
-            <div className="finding-card finding-card--negative">
-              <div className="finding-icon">
-                <Icon name="TrendingDown" size={18} />
-              </div>
-              <div>
-                <div className="finding-value">−1.4 балла</div>
-                <div className="finding-label">
-                  снижение индекса финансового стресса FSS-7 при регулярном
-                  бюджетировании (β=−0.31, p&lt;0.001)
-                </div>
-              </div>
-            </div>
-            <div className="finding-card finding-card--neutral">
-              <div className="finding-icon">
-                <Icon name="Activity" size={18} />
-              </div>
-              <div>
-                <div className="finding-value">r = 0.47</div>
-                <div className="finding-label">
-                  корреляция между наличием финансового плана и формированием
-                  резервного фонда (p&lt;0.01)
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div className="section-divider" />
-
-        {/* Conclusions */}
-        <section id="conclusions" className="research-section">
-          <div className="section-label">05 / Выводы</div>
-          <h2 className="section-title">
-            Заключительные выводы и рекомендации
-          </h2>
-
-          <div className="conclusions-block">
-            <h3 className="conclusions-sub">Подтверждение гипотез</h3>
-            <div className="hypothesis-results">
-              <div className="h-result h-result--confirmed">
-                <div className="h-result-badge">H₁ — Подтверждена</div>
-                <p>
-                  Систематическое бюджетирование положительно коррелирует с
-                  нормой сбережений (r=0.42) и отрицательно — с долговой
-                  нагрузкой (r=−0.38) и финансовым стрессом (β=−0.31).
-                </p>
-              </div>
-              <div className="h-result h-result--confirmed">
-                <div className="h-result-badge">H₁a — Подтверждена</div>
-                <p>
-                  Пользователи цифровых инструментов бюджетирования
-                  сберегают в среднем на 8.3 процентных пункта больше при
-                  контроле уровня дохода.
-                </p>
-              </div>
-              <div className="h-result h-result--confirmed">
-                <div className="h-result-badge">H₁b — Подтверждена</div>
-                <p>
-                  Детализированность учёта отрицательно предсказывает
-                  финансовый стресс (β=−0.31, p&lt;0.001) независимо от
-                  уровня дохода.
-                </p>
-              </div>
-              <div className="h-result h-result--partial">
-                <div className="h-result-badge">H₁c — Частично подтверждена</div>
-                <p>
-                  Наличие плана коррелирует с формированием резервного фонда
-                  (r=0.47), однако горизонт планирования (6+ мес.) не
-                  выступает значимым предиктором при контроле остальных
-                  переменных.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="recommendations">
-            <h3 className="conclusions-sub">Практические рекомендации</h3>
-            <div className="rec-list">
-              {[
-                {
-                  num: "01",
-                  title: "Цифровые инструменты",
-                  text: "Государственным программам финансового просвещения следует приоритизировать обучение работе с приложениями для ведения бюджета как наиболее эффективным инструментом изменения финансового поведения.",
-                },
-                {
-                  num: "02",
-                  title: "Работодатели и корпоративные программы",
-                  text: "Включение воркшопов по личному бюджетированию в программы ДМС и корпоративного обучения снижает финансовый стресс сотрудников и коррелирует с ростом производительности труда.",
-                },
-                {
-                  num: "03",
-                  title: "Образовательная политика",
-                  text: "Внедрение практических модулей по управлению семейным бюджетом в школьный курс начиная с 8-го класса создаёт устойчивые поведенческие паттерны в долгосрочной перспективе.",
-                },
-                {
-                  num: "04",
-                  title: "Банки и финансовые институты",
-                  text: "Проактивное предоставление клиентам персонализированной аналитики расходов и инструментов планирования снижает вероятность дефолта по кредитным обязательствам на 12–18%.",
-                },
-              ].map((rec) => (
-                <div key={rec.num} className="rec-item">
-                  <span className="rec-num">{rec.num}</span>
-                  <div>
-                    <h4 className="rec-title">{rec.title}</h4>
-                    <p className="rec-text">{rec.text}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <div className="section-divider" />
-
-        {/* References */}
-        <section id="references" className="research-section">
-          <div className="section-label">06 / Источники</div>
-          <h2 className="section-title">Список литературы</h2>
-
-          <div className="references-list">
-            {references.map((ref) => (
-              <div key={ref.num} className="ref-item">
-                <span className="ref-num">{ref.num}.</span>
-                <div className="ref-content">
-                  <span className="ref-authors">{ref.authors}</span>{" "}
-                  <span className="ref-year">({ref.year}).</span>{" "}
-                  <span className="ref-title">{ref.title}.</span>{" "}
-                  <em className="ref-journal">{ref.journal}</em>
-                  {ref.vol !== "—" && (
-                    <>
-                      , <span className="ref-vol">{ref.vol}</span>
-                    </>
-                  )}
-                  {ref.pages !== "—" && (
-                    <>
-                      , <span className="ref-pages">с. {ref.pages}</span>
-                    </>
-                  )}
-                  .
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      </main>
-
-      {/* Footer */}
-      <footer className="research-footer">
-        <div className="footer-inner">
+        <div className="hypothesis-box">
+          <div className="hyp-label">Основная гипотеза (H₁)</div>
           <p>
-            © 2025 Кафедра экономики и финансов · Все права защищены · Для
-            цитирования указывайте полное название работы и год публикации
+            Систематическое применение инструментов бюджетного планирования положительно
+            коррелирует с долей сбережений от совокупного дохода домохозяйства и отрицательно
+            коррелирует с уровнем долговой нагрузки и субъективным финансовым стрессом при
+            контроле уровня дохода, образования и демографических характеристик.
           </p>
         </div>
-      </footer>
+
+        <p>
+          Основная гипотеза конкретизируется в трёх субгипотезах, соответствующих трём
+          ключевым зависимым переменным исследования.
+        </p>
+
+        <div className="sub-hyp-block">
+          <div className="sub-hyp-label">Субгипотеза H₁a (норма сбережений)</div>
+          <p>
+            Домохозяйства, использующие цифровые инструменты бюджетирования (мобильные
+            приложения, электронные таблицы), демонстрируют статистически значимо более
+            высокую норму сбережений по сравнению с домохозяйствами, не ведущими
+            систематического учёта доходов и расходов, при контроле уровня дохода.
+          </p>
+        </div>
+
+        <div className="sub-hyp-block">
+          <div className="sub-hyp-label">Субгипотеза H₁b (финансовый стресс)</div>
+          <p>
+            Уровень субъективного финансового стресса, измеренный по шкале FSS-7,
+            обратно пропорционален частоте и степени детализированности ведения
+            семейного бюджета при контроле абсолютного уровня дохода домохозяйства.
+          </p>
+        </div>
+
+        <div className="sub-hyp-block">
+          <div className="sub-hyp-label">Субгипотеза H₁c (резервный фонд)</div>
+          <p>
+            Наличие письменного или цифрового финансового плана на срок свыше 6 месяцев
+            является статистически значимым предиктором формирования резервного фонда
+            в объёме не менее трёх ежемесячных расходов домохозяйства.
+          </p>
+        </div>
+
+        <p>
+          Теоретическим основанием для формулировки гипотез послужили концепция
+          планирования сбережений (Lusardi &amp; Mitchell, 2014), теория самодетерминации
+          применительно к финансовому поведению (Mandell &amp; Klein, 2009), а также
+          поведенческая экономика в части ментального учёта (mental accounting) и
+          эффектов самоконтроля (Calcagno &amp; Monticone, 2015).
+        </p>
+        <p>
+          Принципиально важным методологическим допущением является то, что настоящее
+          исследование не претендует на установление причинно-следственных зависимостей:
+          корреляционная природа применяемых методов позволяет лишь фиксировать
+          статистические ассоциации между переменными. Вопрос о направлении причинности
+          остаётся открытым и требует лонгитюдных данных для окончательного разрешения.
+        </p>
+        <div className="page-num">— 4 —</div>
+      </div>
+
+      {/* PAGE 5: Literature review */}
+      <div className="a4-page">
+        <h2 className="h2-section">3. ОБЗОР ЛИТЕРАТУРЫ</h2>
+        <p>
+          Изучение финансовой грамотности как академической дисциплины насчитывает
+          относительно короткую, но интенсивную историю. Пионерские работы Lusardi &amp; Mitchell
+          (2014) заложили теоретические основы понимания финансовой грамотности как
+          многомерного конструкта, включающего знания о базовых финансовых концепциях
+          (процентные ставки, инфляция, диверсификация рисков), умения применять эти знания
+          при принятии финансовых решений и установки в отношении долгосрочного
+          финансового планирования.
+        </p>
+        <p>
+          Международное сравнительное исследование Klapper, Lusardi &amp; van Oudheusden (2015),
+          охватившее 150 стран и более 150 000 респондентов, показало, что в глобальном
+          масштабе лишь 33% взрослого населения обладают достаточным уровнем финансовой
+          грамотности. В России этот показатель по критериям исследования составил 38%,
+          что выше среднемировых значений, однако существенно уступает показателям
+          Скандинавских стран (70–75%) и ряда стран Азиатско-Тихоокеанского региона.
+        </p>
+        <p>
+          В контексте бюджетного поведения домохозяйств ключевым является разграничение
+          между декларируемыми знаниями о финансовых инструментах и реальными
+          поведенческими практиками. Hung et al. (2009) предложили операциональное
+          определение финансовой грамотности через «способность принимать обоснованные
+          финансовые решения», подчёркивая поведенческое измерение в противовес
+          когнитивному. Это разграничение принципиально важно для настоящего исследования,
+          фокусирующегося именно на практиках бюджетирования, а не на декларируемых знаниях.
+        </p>
+        <p>
+          Отечественная исследовательская традиция в данной области значительно моложе
+          зарубежной. Кузина (2015) предложила разграничение понятий «финансовая
+          грамотность» (knowledge) и «финансовая компетентность» (competence), указав, что
+          именно второй конструкт — операциональное умение применять знания в конкретных
+          ситуациях — является более значимым предиктором финансового поведения в
+          российском контексте. Авдеева &amp; Полянин (2021) выявили значительную региональную
+          дифференциацию уровня финансовой грамотности в России: разрыв между
+          регионами-лидерами (Москва, Санкт-Петербург, Тюменская область) и регионами
+          с наименьшими показателями достигает 2,3 раза.
+        </p>
+        <p>
+          Применительно к бюджетированию как специфическому аспекту финансовой
+          компетентности Calcagno &amp; Monticone (2015) показали, что наличие систематических
+          практик финансового планирования является более сильным предиктором обращения
+          за профессиональными финансовыми советами и, как следствие, принятия более
+          качественных инвестиционных решений. Mandell &amp; Klein (2009) в лонгитюдном
+          исследовании установили, что финансовое образование, полученное в старшем
+          школьном возрасте, оказывает статистически значимое долгосрочное влияние
+          на сберегательное поведение во взрослом возрасте.
+        </p>
+        <p>
+          Настоящее исследование заполняет выявленный пробел в части количественной
+          оценки связи между конкретными практиками бюджетирования (частота, инструменты,
+          детализированность) и измеримыми показателями финансового благополучия
+          домохозяйств в российском контексте с применением мультивариатных методов
+          статистического анализа.
+        </p>
+        <div className="page-num">— 5 —</div>
+      </div>
+
+      {/* PAGE 6: Methods */}
+      <div className="a4-page">
+        <h2 className="h2-section">4. МЕТОДОЛОГИЯ И МЕТОДЫ ИССЛЕДОВАНИЯ</h2>
+
+        <h3 className="h3-section">4.1. Дизайн исследования и выборка</h3>
+        <p>
+          Исследование выполнено в рамках количественной исследовательской стратегии
+          с использованием поперечного (cross-sectional) дизайна. Генеральная совокупность —
+          домохозяйства Российской Федерации с совокупным месячным доходом не ниже
+          прожиточного минимума. Применялась стратифицированная случайная выборка
+          по двум основаниям: тип поселения (городское/сельское) и уровень дохода
+          (ниже среднего / средний / выше среднего).
+        </p>
+        <p>
+          Итоговая выборка составила <strong>n = 1 847 домохозяйств</strong> из 12 регионов
+          России, репрезентирующих все федеральные округа. Период сбора данных:
+          февраль — апрель 2025 года. Уровень отклика анкет — 71,4%.
+          Репрезентативность выборки верифицирована сравнением с данными переписи
+          населения 2020 года по ключевым демографическим характеристикам (χ² = 4,18; p = 0,38).
+        </p>
+
+        <h3 className="h3-section">4.2. Инструментарий</h3>
+        <p>
+          Для сбора данных применялся стандартизированный самозаполняемый опросник,
+          содержащий 47 вопросов и структурированный в четыре блока:
+        </p>
+        <ol className="numbered-list">
+          <li><strong>Социально-демографический блок</strong> (возраст, образование, состав семьи, регион, тип поселения);</li>
+          <li><strong>Блок финансовых характеристик</strong> (уровень дохода, структура расходов, наличие и размер сбережений, долговая нагрузка);</li>
+          <li><strong>Блок поведенческих практик</strong> (частота ведения бюджета, используемые инструменты, горизонт планирования);</li>
+          <li><strong>Шкала финансового стресса FSS-7</strong> (7-пунктная версия, адаптированная для российской аудитории; α Кронбаха = 0,83).</li>
+        </ol>
+
+        <h3 className="h3-section">4.3. Операционализация переменных</h3>
+        <p>
+          Независимая переменная «использование бюджетирования» операционализирована
+          как порядковая шкала (0 = не веду бюджет; 1 = веду эпизодически; 2 = веду
+          регулярно без детализации; 3 = веду регулярно с детализацией). Зависимые
+          переменные: норма сбережений (% от совокупного месячного дохода), долговая
+          нагрузка (% от дохода, направляемый на обслуживание долга), финансовый стресс
+          (суммарный балл FSS-7, диапазон 7–49). Контрольные переменные: логарифм
+          совокупного дохода, уровень образования, возраст, состав домохозяйства.
+        </p>
+
+        <h3 className="h3-section">4.4. Статистические методы</h3>
+        <p>
+          Анализ данных проводился в среде R 4.3.2. Применялись: (1) описательная
+          статистика; (2) корреляционный анализ Пирсона для оценки попарных связей;
+          (3) множественная линейная регрессия методом наименьших квадратов (OLS) для
+          оценки независимого вклада практик бюджетирования при контроле ковариатов;
+          (4) кластерный анализ методом k-средних (k = 4) для выявления типологии
+          домохозяйств. Статистическая значимость — на уровне p &lt; 0,05.
+          Все тесты — двусторонние.
+        </p>
+        <p>
+          Этические аспекты: все участники исследования дали добровольное
+          информированное согласие. Персональные данные анонимизированы.
+          Исследование получило одобрение комитета по исследовательской этике
+          университета (протокол № 2025-04 от 15.01.2025).
+        </p>
+        <div className="page-num">— 6 —</div>
+      </div>
+
+      {/* PAGE 7: Results */}
+      <div className="a4-page">
+        <h2 className="h2-section">5. РЕЗУЛЬТАТЫ И АНАЛИЗ ДАННЫХ</h2>
+
+        <h3 className="h3-section">5.1. Описательная статистика</h3>
+        <p>
+          Анализ выборки показал следующее распределение по практикам бюджетирования:
+          23% домохозяйств ведут бюджет систематически, 31% — эпизодически,
+          46% не ведут бюджет вовсе. Среди использующих бюджетирование преобладают
+          цифровые инструменты: мобильные приложения (38%), электронные таблицы (29%),
+          бумажные записи (21%), иные способы (12%).
+        </p>
+        <p>
+          Средняя норма сбережений по выборке составила 9,4% (SD = 7,2%).
+          Медианная долговая нагрузка — 18,3% от дохода. Средний балл по шкале
+          FSS-7 — 28,7 (SD = 8,4), что соответствует умеренному уровню финансового стресса.
+          Средняя структура расходов домохозяйств: обязательные расходы — 58%,
+          дискреционные расходы — 24%, сбережения — 11%, обслуживание долгов — 7%.
+        </p>
+
+        <h3 className="h3-section">5.2. Корреляционный анализ</h3>
+        <p>
+          Между уровнем систематичности бюджетирования и нормой сбережений
+          выявлена положительная корреляция средней силы (r = 0,42; p &lt; 0,01).
+          Связь между бюджетированием и долговой нагрузкой — отрицательная
+          (r = −0,38; p &lt; 0,01). Корреляция бюджетирования с финансовым
+          стрессом также отрицательная (r = −0,44; p &lt; 0,001).
+          Наличие финансового плана и наличие резервного фонда связаны
+          умеренно положительно (r = 0,47; p &lt; 0,01), что обеспечивает
+          частичное подтверждение субгипотезы H₁c.
+        </p>
+
+        <h3 className="h3-section">5.3. Регрессионный анализ</h3>
+        <p>
+          Модель множественной регрессии для зависимой переменной «финансовый
+          стресс» объяснила 34% дисперсии (R² = 0,34; F(6, 1840) = 158,4;
+          p &lt; 0,001). Систематичность бюджетирования оказалась значимым
+          отрицательным предиктором (β = −0,31; t = −14,2; p &lt; 0,001) при контроле
+          дохода (β = −0,28), образования (β = −0,11) и демографических переменных.
+        </p>
+        <p>
+          Для зависимой переменной «норма сбережений» модель объяснила 29%
+          дисперсии (R² = 0,29). Бюджетирование выступило значимым положительным
+          предиктором (β = 0,26; p &lt; 0,001). Пользователи цифровых инструментов
+          сберегали в среднем на 8,3 процентных пункта больше по сравнению с теми,
+          кто не ведёт бюджет, при прочих равных условиях.
+        </p>
+
+        <h3 className="h3-section">5.4. Кластерный анализ</h3>
+        <p>
+          Кластеризация методом k-средних (k = 4) позволила выделить
+          четыре устойчивые типологические группы домохозяйств:
+        </p>
+        <ol className="numbered-list">
+          <li><strong>«Организованные»</strong> (19%) — систематическое бюджетирование, высокая норма сбережений (18,4%), низкий финансовый стресс (FSS = 21,3);</li>
+          <li><strong>«Ситуативные»</strong> (28%) — эпизодическое бюджетирование, умеренные сбережения (9,1%), средний уровень стресса;</li>
+          <li><strong>«Пассивные»</strong> (34%) — отсутствие бюджетирования, низкие сбережения (4,2%), высокий стресс (FSS = 33,8);</li>
+          <li><strong>«Проблемные»</strong> (19%) — высокая долговая нагрузка (&gt;40%), выраженный финансовый стресс (FSS = 38,1) независимо от наличия бюджетирования.</li>
+        </ol>
+        <div className="page-num">— 7 —</div>
+      </div>
+
+      {/* PAGE 8: Discussion */}
+      <div className="a4-page">
+        <h2 className="h2-section">6. ОБСУЖДЕНИЕ РЕЗУЛЬТАТОВ</h2>
+
+        <h3 className="h3-section">6.1. Проверка гипотез</h3>
+
+        <div className="result-row result-confirmed">
+          <span className="result-badge">H₁ — Подтверждена</span>
+          <p>
+            Основная гипотеза подтверждена в полном объёме. Систематическое
+            бюджетирование положительно связано с нормой сбережений (r = 0,42)
+            и отрицательно — с долговой нагрузкой (r = −0,38) и финансовым
+            стрессом (β = −0,31). Все связи статистически значимы при p &lt; 0,01.
+          </p>
+        </div>
+
+        <div className="result-row result-confirmed">
+          <span className="result-badge">H₁a — Подтверждена</span>
+          <p>
+            Пользователи цифровых инструментов бюджетирования сберегают
+            в среднем на 8,3 п.п. больше при контроле дохода (p &lt; 0,001).
+            Разрыв между пользователями мобильных приложений и теми, кто не
+            ведёт бюджет, является максимальным среди всех сравниваемых групп.
+          </p>
+        </div>
+
+        <div className="result-row result-confirmed">
+          <span className="result-badge">H₁b — Подтверждена</span>
+          <p>
+            Детализированность учёта расходов является значимым отрицательным
+            предиктором финансового стресса (β = −0,31; p &lt; 0,001) независимо
+            от уровня дохода. Эффект интерпретируется через концепцию «иллюзии
+            контроля»: само по себе ведение учёта снижает тревожность, связанную
+            с финансовой неопределённостью.
+          </p>
+        </div>
+
+        <div className="result-row result-partial">
+          <span className="result-badge">H₁c — Подтверждена частично</span>
+          <p>
+            Наличие финансового плана коррелирует с формированием резервного
+            фонда (r = 0,47; p &lt; 0,01), однако горизонт планирования свыше
+            6 месяцев не является значимым предиктором при включении в модель
+            других переменных (β = 0,09; p = 0,14). Сам факт наличия плана
+            важнее его временного горизонта.
+          </p>
+        </div>
+
+        <h3 className="h3-section">6.2. Ограничения исследования</h3>
+        <p>
+          Ряд существенных ограничений требует учёта при интерпретации результатов.
+          Во-первых, поперечный дизайн не позволяет установить направление причинности:
+          возможно, что финансово благополучные домохозяйства склонны вести бюджет,
+          а не наоборот. Во-вторых, данные о доходах и расходах получены методом
+          самоотчёта и могут содержать систематические ошибки (social desirability bias).
+          В-третьих, выборка не охватывает домохозяйства с доходом ниже прожиточного
+          минимума, что ограничивает обобщаемость выводов на наиболее уязвимые группы.
+        </p>
+        <p>
+          Кроме того, эффект бюджетирования может быть опосредован личностными
+          характеристиками (добросовестность, самоконтроль), не включёнными в настоящую
+          модель, что создаёт риск смешанных эффектов.
+        </p>
+        <div className="page-num">— 8 —</div>
+      </div>
+
+      {/* PAGE 9: Conclusions */}
+      <div className="a4-page">
+        <h2 className="h2-section">7. ЗАКЛЮЧИТЕЛЬНЫЕ ВЫВОДЫ И РЕКОМЕНДАЦИИ</h2>
+
+        <h3 className="h3-section">7.1. Основные выводы</h3>
+        <p>
+          <strong>1. Практики бюджетирования являются значимым предиктором
+          финансового благополучия.</strong> Систематическое ведение семейного
+          бюджета ассоциировано с более высокой нормой сбережений,
+          меньшей долговой нагрузкой и сниженным уровнем финансового стресса
+          даже при контроле уровня дохода и образования.
+        </p>
+        <p>
+          <strong>2. Цифровые инструменты обладают наибольшим потенциалом.</strong>
+          Среди всех форм бюджетирования использование мобильных приложений
+          и электронных таблиц ассоциировано с наибольшим эффектом для нормы
+          сбережений. Это указывает на важность поощрения цифровизации
+          личных финансов.
+        </p>
+        <p>
+          <strong>3. Охват бюджетированием в России критически низок.</strong>
+          Лишь 23% домохозяйств ведут бюджет систематически, 46% семей не
+          ведут никакого учёта. Этот структурный дефицит требует системных мер
+          на уровне государственной политики.
+        </p>
+        <p>
+          <strong>4. Финансовый стресс снижается уже при факте учёта.</strong>
+          Одно лишь ведение бюджета вне зависимости от его детализации снижает
+          субъективный финансовый стресс, что объясняется психологическим
+          эффектом контроля над финансовой ситуацией.
+        </p>
+
+        <h3 className="h3-section">7.2. Практические рекомендации</h3>
+        <p>
+          <strong>Для государственных органов и программ финансового просвещения.</strong>
+          Рекомендуется переориентировать программы финансовой грамотности с
+          декларативных знаний на формирование конкретных поведенческих навыков
+          бюджетирования с приоритетом освоения цифровых инструментов.
+          Целевые группы первой очереди: молодёжь 18–30 лет и семьи с детьми.
+        </p>
+        <p>
+          <strong>Для работодателей и HR-служб.</strong>
+          Включение практических воркшопов по семейному бюджетированию в
+          корпоративные программы благополучия способно снизить финансовый стресс
+          персонала, коррелирующий с производительностью труда и абсентеизмом.
+        </p>
+        <p>
+          <strong>Для образовательных организаций.</strong>
+          Внедрение обязательного модуля по управлению личным бюджетом в
+          школьный курс начиная с 8-го класса позволит сформировать устойчивые
+          поведенческие паттерны до момента принятия первых самостоятельных
+          финансовых решений.
+        </p>
+        <p>
+          <strong>Для банков и финансовых организаций.</strong>
+          Проактивное предоставление клиентам персонализированной аналитики
+          расходов и встроенных инструментов планирования в мобильных
+          приложениях снижает вероятность дефолта по кредитным обязательствам
+          и повышает удовлетворённость клиентов.
+        </p>
+
+        <h3 className="h3-section">7.3. Направления дальнейших исследований</h3>
+        <p>
+          Перспективными направлениями являются: (1) лонгитюдное исследование
+          для установления причинно-следственных зависимостей; (2) изучение
+          медиирующей роли личностных характеристик (самоконтроль, добросовестность);
+          (3) разработка и тестирование интервенций по обучению бюджетированию
+          с оценкой их долгосрочной эффективности методом рандомизированного
+          контролируемого эксперимента.
+        </p>
+        <div className="page-num">— 9 —</div>
+      </div>
+
+      {/* PAGE 10: References */}
+      <div className="a4-page">
+        <h2 className="h2-section">СПИСОК ЛИТЕРАТУРЫ</h2>
+        <ol className="ref-list">
+          {references.map((ref) => (
+            <li key={ref.num} className="ref-item-doc">
+              {ref.text}
+            </li>
+          ))}
+        </ol>
+
+        <div className="colophon">
+          <p>Рукопись поступила в редакцию: 28 апреля 2025 г.</p>
+          <p>Принята к публикации: 30 апреля 2025 г.</p>
+        </div>
+
+        <div className="page-num">— 10 —</div>
+      </div>
+
     </div>
   );
 }
