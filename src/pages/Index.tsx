@@ -1,3 +1,13 @@
+const PrintButton = () => (
+  <button
+    onClick={() => window.print()}
+    className="print-btn"
+    title="Распечатать документ"
+  >
+    🖨 Распечатать
+  </button>
+);
+
 const references = [
   {
     num: 1,
@@ -44,6 +54,7 @@ const references = [
 export default function Index() {
   return (
     <div className="doc-wrap">
+      <PrintButton />
 
       {/* PAGE 1: Title page */}
       <div className="a4-page page-title">
